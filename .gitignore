@@ -1,10 +1,13 @@
-# Created by .ignore support plugin (hsz.mobi)
-.gitignore
+# Gradle files
 .gradle/
+
+# Intellij files
 .idea/
-generated_tests/
-out/
 *.iml
 *.ipr
 *.iws
+out/
+
+# Generated files
 generated/
+generated_tests/
