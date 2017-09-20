@@ -1,0 +1,68 @@
+group 'us.sodiumlabs'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+ext.junitJupiterVersion  = '5.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    integration {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir 'src/it/java'
+        }
+        resources.srcDir 'src/it/resources'
+    }
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    compile group: 'com.google.guava', name: 'guava', version: '19.0'
+    // https://mvnrepository.com/artifact/org.immutables/value
+    compileOnly group: 'org.immutables', name: 'value', version: '2.5.6'
+
+    // log4j2
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.9.0'
+    integrationCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.9.0'
+
+    // junit
+    testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+    integrationCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+    integrationRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+}
+
+idea {
+    module {
+        sourceDirs += file "generated"
+        testSourceDirs += file "src/it/java"
+        testSourceDirs += file "src/it/resources"
+        excludeDirs += file ".idea"
+    }
+    module.iml.withXml {
+        def atts = it.asNode().component.content.sourceFolder
+                .find { it.@url == 'file://$MODULE_DIR$/src/it/resources' }
+                .attributes()
+        atts.remove('isTestSource')
+        atts.put('type', 'java-test-resource')
+    }
+}
+
+configurations {
+    integrationCompile.extendsFrom testCompile
+    integrationRuntime.extendsFrom testRuntime
+}
+
+task its(type: Test, description: 'Runs the integration tests.', group: 'Verification') {
+    testClassesDir = sourceSets.integration.output.classesDir
+    classpath = sourceSets.integration.runtimeClasspath
+}
