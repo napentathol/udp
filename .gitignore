@@ -1,0 +1,10 @@
+# Created by .ignore support plugin (hsz.mobi)
+.gitignore
+.gradle/
+.idea/
+generated_tests/
+out/
+*.iml
+*.ipr
+*.iws
+generated/
