@@ -4,13 +4,13 @@ import com.google.common.io.ByteSource;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.sodiumlabs.udp.server.UdpServer;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -21,7 +21,7 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
-public abstract class UdpCommon<T>
+public abstract class UdpCommon<T extends UdpCommon<T>>
     implements AutoCloseable
 {
     /**
@@ -57,7 +57,7 @@ public abstract class UdpCommon<T>
     }
 
     @Value.Default
-    public Function<UdpServer, ReaderThread> getReaderThreadProvider() {
+    public Function<T, ReaderThread> getReaderThreadProvider() {
         return ReaderThread::new;
     }
 
@@ -77,7 +77,9 @@ public abstract class UdpCommon<T>
     {
         if(getLogger().isTraceEnabled()) getLogger().trace("Sending packet: " + packet.toString());
 
-        final byte[] packetBytes = packet.toPacket().read();
+        final ByteBuffer packetBuffer = packet.toPacket();
+        final byte[] packetBytes = new byte[packetBuffer.remaining()];
+        packetBuffer.get(packetBytes);
         final DatagramPacket datagramPacket = new DatagramPacket(packetBytes, packetBytes.length, destination, port);
         getSocket().send(datagramPacket);
     }
@@ -106,7 +108,6 @@ public abstract class UdpCommon<T>
         getExecutorService().shutdownNow();
         getSocket().close();
     }
-
 
     public static class ReaderThread implements Runnable, AutoCloseable {
         private final AtomicBoolean open = new AtomicBoolean(true);

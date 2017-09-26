@@ -36,16 +36,29 @@
 
 # Packets
 
-## In General
+## Design
 
-A packet shall consist of the following fields:
+1. A SHA256 of the rest of the packet. (32 bytes)
+2. Client ID (16 bytes)
+3. The packet ID. (1 byte)
+4. Reserved space (3 bytes)
+5. Length (2 bytes)
+6. Custom ID (2 bytes)
+7. Packet order count (8 bytes)
+8. Data payload (< 65,443 bytes)
 
-1. A 1-byte field representing the packet type.
-2. 3-bytes of reserved space
-3. A 4-byte field representing the payload size.
-4. A 32-byte field representing the SHA-256 of the payload and a secret.
-5. A 16-byte field representing the UUID of the sender.
-6. A variable sized payload no larger than 65451 bytes.
+```
+|                SHA 256                |
+|                SHA 256                |
+|                SHA 256                |
+|                SHA 256                |
+|               CLIENT ID               |
+|               CLIENT ID               |
+| ID |   RESERVED   | LENGTH  | CUSTOM  |
+|          PACKET ORDER COUNT           |
+| DATA ...
+```
+
 
 ## HELLO, DISCONNECT, REJECT, ACCEPT, PING, and PONG packets
 

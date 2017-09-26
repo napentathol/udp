@@ -2,7 +2,7 @@ package us.sodiumlabs.udp.server;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.immutables.value.Value;
-import us.sodiumlabs.udp.common.PacketParser;
+import us.sodiumlabs.udp.common.Packet;
 import us.sodiumlabs.udp.common.PacketType;
 import us.sodiumlabs.udp.common.UdpCommon;
 import us.sodiumlabs.udp.immutables.Style;
@@ -47,33 +47,23 @@ public abstract class UdpServer
     @VisibleForTesting
     protected void handlePacket(final DatagramPacket packet) {
         try {
-            getPacketParser().parsePacket(ByteBuffer.wrap(packet.getData()), getClientKeyProvider()).ifPresent(p -> {
-                try {
-                    if(!p.getType().isSentFromClient()) {
-                        if(getLogger().isDebugEnabled()) getLogger().debug(
-                            String.format("Received type that is not handled by the server [%s].", p.getType()));
-                        return;
-                    }
+            final Packet parsedPacket = getPacketParser().parsePacket(ByteBuffer.wrap(packet.getData()), getClientKeyProvider());
 
-                    if(PacketType.HELLO == p.getType()) {
-                        sendAcceptPacket(packet);
-                        // TODO: add listener event here.
-                        getLogger().info(String.format("Client with uuid [%s] has connected.", p.getSenderId()));
-                    }
-                } catch (IOException e) {
-                    if(getLogger().isDebugEnabled()) getLogger().debug("Failed to send accept packet.", e);
+            if(!parsedPacket.getType().isSentFromClient()) {
+                if(getLogger().isDebugEnabled()) {
+                    getLogger().debug(
+                        String.format("Received type that is not handled by the server [%s].", parsedPacket.getType()));
                 }
-            });
-        } catch (PacketParser.ParsingFailureException e) {
-            if(PacketType.HELLO == e.getType()) {
-                try {
-                    sendRejectPacket(packet);
-                } catch (IOException e1) {
-                    if(getLogger().isDebugEnabled()) getLogger().debug("Failed to send reject packet.", e1);
-                }
-            } else {
-                if(getLogger().isDebugEnabled()) getLogger().debug("Unable to parse packet!", e);
+                return;
             }
+
+            if(PacketType.HELLO == parsedPacket.getType()) {
+                sendAcceptPacket(packet);
+                // TODO: add listener event here.
+                getLogger().info(String.format("Client with uuid [%s] has connected.", parsedPacket.getSenderId()));
+            }
+        } catch (IOException | RuntimeException e) {
+            if(getLogger().isDebugEnabled()) getLogger().debug("Failed to handle packet.", e);
         }
     }
 

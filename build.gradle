@@ -29,6 +29,7 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '19.0'
     // https://mvnrepository.com/artifact/org.immutables/value
     compileOnly group: 'org.immutables', name: 'value', version: '2.5.6'
+    compileOnly group: 'org.immutables', name: 'builder', version: '2.5.6'
 
     // log4j2
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.9.0'

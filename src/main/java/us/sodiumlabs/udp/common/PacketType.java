@@ -20,14 +20,13 @@ public enum PacketType {
         }
     },
     PING(PacketSenderContext.CLIENT_ONLY, (byte) 0x04),
-    PONG(PacketSenderContext.SERVER_ONLY, (byte) 0x05),
-    BAD_ACK(PacketSenderContext.BOTH, (byte) 0x06),
-    ACK(PacketSenderContext.BOTH, (byte) 0x07),
-    DATA_ACK(PacketSenderContext.BOTH, (byte) 0x08),
-    DATA_NOACK(PacketSenderContext.BOTH, (byte) 0x09),
+    PANG(PacketSenderContext.SERVER_ONLY, (byte) 0x05),
+    PONG(PacketSenderContext.CLIENT_ONLY, (byte) 0x06),
+    BAD_ACK(PacketSenderContext.BOTH, (byte) 0x07),
+    ACK(PacketSenderContext.BOTH, (byte) 0x08),
+    DATA_ACK(PacketSenderContext.BOTH, (byte) 0x09),
+    DATA_NOACK(PacketSenderContext.BOTH, (byte) 0x0a),
     INVALID(PacketSenderContext.BOTH, (byte) 0xff);
-
-    private static final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
 
     private static final Map<Byte, PacketType> packetTypeMap;
 
