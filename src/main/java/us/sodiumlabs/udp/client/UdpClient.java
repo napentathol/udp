@@ -49,7 +49,27 @@ public abstract class UdpClient
         }
     }
 
-    protected void handlePacket(final DatagramPacket packet) {}
+    protected void handlePacket(final DatagramPacket packet) {
+        try {
+            final Packet parsedPacket = getPacketParser().parsePacket(ByteBuffer.wrap(packet.getData()), id -> getServerKey());
+
+            if(!parsedPacket.getType().isSentFromServer()) {
+                if(getLogger().isDebugEnabled()) {
+                    getLogger().debug(
+                        String.format("Received type that is not handled by the server [%s].", parsedPacket.getType()));
+                }
+                return;
+            }
+
+            if(PacketType.PANG == parsedPacket.getType()) {
+                sendPongPacket();
+                // TODO: add listener event here.
+                getLogger().trace("Client has received pang from server.");
+            }
+        } catch (IOException | RuntimeException e) {
+            if(getLogger().isDebugEnabled()) getLogger().debug("Failed to handle packet.", e);
+        }
+    }
 
     // Send packets
     private void sendHelloPacket() throws IOException {
@@ -58,6 +78,10 @@ public abstract class UdpClient
 
     private void sendPingPacket() throws IOException {
         sendTimestampPacket(PacketType.PING, getDestination(), getPort());
+    }
+
+    private void sendPongPacket() throws IOException {
+        sendTimestampPacket(PacketType.PONG, getDestination(), getPort());
     }
 
     // Initialization and closing.
@@ -107,11 +131,13 @@ public abstract class UdpClient
             while (open.get()) {
                 try {
                     TimeUnit.MILLISECONDS.sleep(500);
+                } catch (final InterruptedException e) {
+                    if (client.getLogger().isTraceEnabled()) client.getLogger().trace("Ping thread interrupted.", e);
+                }
 
+                try {
                     client.sendPingPacket();
-                } catch (InterruptedException e) {
-                    if(client.getLogger().isTraceEnabled()) client.getLogger().trace("Ping thread interrupted.", e);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     if(client.getLogger().isDebugEnabled()) client.getLogger().debug("IO Exception.", e);
                 }
             }

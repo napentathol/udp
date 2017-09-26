@@ -10,12 +10,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 public class ClientHappyTest {
     @Test
-    public void clientHappyTest() throws IOException {
+    void clientHappyTest() throws IOException, InterruptedException {
         assertTimeoutPreemptively(Duration.ofSeconds(2), ()-> {
             final int port = 19900;
 
@@ -51,5 +52,7 @@ public class ClientHappyTest {
                 .build();
             client.initiateConnection();
         });
+
+        TimeUnit.SECONDS.sleep(2L);
     }
 }

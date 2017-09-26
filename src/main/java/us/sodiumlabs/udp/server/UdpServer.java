@@ -62,6 +62,17 @@ public abstract class UdpServer
                 // TODO: add listener event here.
                 getLogger().info(String.format("Client with uuid [%s] has connected.", parsedPacket.getSenderId()));
             }
+
+            else if(PacketType.PING == parsedPacket.getType()) {
+                sendPangPacket(packet);
+                // TODO: add listener event here.
+                getLogger().trace(String.format("Client with uuid [%s] has pinged.", parsedPacket.getSenderId()));
+            }
+
+            else if(PacketType.PONG == parsedPacket.getType()) {
+                // TODO: add listener event here.
+                getLogger().trace(String.format("Client with uuid [%s] has ponged.", parsedPacket.getSenderId()));
+            }
         } catch (IOException | RuntimeException e) {
             if(getLogger().isDebugEnabled()) getLogger().debug("Failed to handle packet.", e);
         }
@@ -74,6 +85,10 @@ public abstract class UdpServer
 
     private void sendRejectPacket(final DatagramPacket packet) throws IOException {
         sendTimestampPacket(PacketType.REJECT, packet);
+    }
+
+    private void sendPangPacket(final DatagramPacket packet) throws IOException {
+        sendTimestampPacket(PacketType.PANG, packet);
     }
 
     // Initialization and closing.
